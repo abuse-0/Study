@@ -441,7 +441,7 @@ products
 #
 """Объединение данных из нескольких таблиц
 SELECT products.name, product_types.type_name - Выбрать столбец name из таблицы products и столбец type_name из таблицы product_types 
-FROM products JOIN product_types                из таблицы product, объединенной с таблицей product_types
+FROM products INNER JOIN product_types                из таблицы product, объединенной с таблицей product_types
 ON products.type_id = product_types.id          при условии, что  значение столбца type_id из таблицы products равно значению столбца id из таблицы product_types
 """
 #
@@ -451,7 +451,7 @@ FROM products AS p JOIN product_types AS t
 ON p.type_id = t.id          
 """
 #
-"""Фильтрация данных из нескольких таблиц
+"""Фильтрация данных из нескольких таблиц + сокращение
 SELECT p.name AS product_name,
        t.type_name AS product_type,
        p.price AS product price
@@ -461,7 +461,7 @@ WHERE t.type_name='Вебинар'
 AND p.price = 0
 """
 
-"""Сортировка с join
+"""Сортировка с join + сокращение
 SELECT p.name AS product_name,
        t.type_name AS product_type,
        p.price AS product price
@@ -470,6 +470,123 @@ ON p.type_id = t.id
 WHERE t.type_name='Онлайн-курс'
 ORDER BY p.price DESC
 """
-https://www.youtube.com/watch?v=n-5RLxezWh8&list=PLtPJ9lKvJ4oh5SdmGVusIVDPcELrJ2bsT&index=12
+#
+#
+#
+"""Левое внешнее объединение(всё с левой таблицы выведется)
+SELECT products.name, product_types.type_name 
+FROM products LEFT OUTER JOIN product_types                
+ON products.type_id = product_types.id        
+"""
 
-40
+"""Правое внешнее объединение(всё с правой таблицы выведется)
+SELECT products.name, product_types.type_name 
+FROM products RIGHT OUTER JOIN product_types                
+ON products.type_id = product_types.id        
+"""
+
+"""Полное внешнее объединение(всё с обеих таблиц выведется)
+SELECT products.name, product_types.type_name 
+FROM products FULL OUTER JOIN product_types                
+ON products.type_id = product_types.id        
+"""
+
+"""Внутреннее объединение(если слева или справа нет значения - строка не выводится)
+SELECT products.name, product_types.type_name 
+FROM products INNER JOIN product_types             
+ON products.type_id = product_types.id        
+"""
+#https://drawsql.app/teams/ural-federal-university/diagrams/online-school
+#https://drawsql.app/teams/ural-federal-university/diagrams/online-school
+#https://drawsql.app/teams/ural-federal-university/diagrams/online-school
+"""Продукты в заказе
+SELECT p.id,
+       p.price,
+       s.quantity,
+       p.price * s.quantity AS total -- умножаем стоимость на кол-во
+FROM products AS p JOIN sales As s
+    ON p.id = s.product_id
+WHERE s.order_id=2
+"""
+#
+"""Все покупки заказчика
+SELECT p.id,
+       p.name,
+       p.price,
+       s.quantity,
+       p.price * s.quantity AS total
+FROM products AS p JOIN sales As s 
+    ON p.id = s.product_id
+    JOIN orders AS o
+    ON o.id = s.order_id
+WHERE o.customer_id=1 -- айди заказчика
+"""
+#
+#
+#
+"""Подзапросы в SQL
+SELECT id, name, price -- Получить id, name, price
+FROM products -- из таблицы products
+WHERE price = (SELECT MAX(price) -- где значение в столбце price = выбрать максимум из столбца price
+               FROM products) -- в таблице products
+"""
+#
+"""Инфа о продуктах, проданных хотя бы 1 раз
+SELECT id, name, price -- Выбрать id, name, price
+FROM products -- из таблицы products
+WHERE id IN -- где id входит в список значений в 
+(SELECT product_id FROM sales) -- столбце product_id в таблице sales(ну проданы типо)
+"""
+#
+"""Подзапрос с update
+UPDATE products -- обновить таблицу products
+SET price = price + 500 -- установить в столбцах price значения price + 500
+WHERE type_id = (SELECT id
+                 FROM product_types
+                 WHERE type_name='Книга')
+--Где type_id равно значению (Выбрать id из таблицы product_types, где значение type_name это 'Книга')
+"""
+#
+#
+#
+"""Выполнение транзации
+START TRANSACTION;
+
+UPDATE accounts SET balance = balance - 15000
+WHERE account_number = 123456
+
+-- Важно, чтобы обе команды выполнились успешно
+
+UPDATE accounts SET balance = balance + 15000
+WHERE account_number = 9876543
+
+COMMIT; -- чтобы применить
+-- Выбери чето одно
+ROLLBACK; -- чтобы откатить
+"""
+# В Postgre по умолчанию после каждой команды автофиксация транзации есть, из за этого нельзя откатиться
+# Но опять же это только по умолчанию, ничего не мешает не юзать это
+#
+"""Создание индекса
+CREATE INDEX superheroes_name_idx
+ON superheroes(name)
+"""
+#
+"""Теперь поиск ускорен автоматически
+SELECT name, appearances, eye, hair
+FROM superheroes
+WHERE name = ' Iron Man (Anthony\"Tony\" Stark)'
+"""
+#
+"""индекс для сортировки
+CREATE INDEX superheroes_ppearances_idx
+ON superheroes(appearances DESC)
+"""
+#
+"""индекс по нескольким столбцам
+CREATE INDEX person_name_idx
+ON person(last_name, first_name)
+"""
+# Индексы хранятся в базе и замедляют приколы, для всех столбцов юзать их не надо
+#
+#
